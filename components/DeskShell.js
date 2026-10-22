@@ -7,19 +7,21 @@ import { heldAbi, heldAddress } from "../lib/abi";
 import { heldChain, publicClient } from "../lib/chain";
 import { formatToken, shortAddress } from "../lib/format";
 import { useSigner } from "../lib/useSigner";
+import { useI18n } from "../lib/i18n";
 import { ConnectButton } from "./ConnectButton";
-
-const links = [
-  { href: "/desk", label: "My agents", match: (path) => path === "/desk" },
-  { href: "/desk/create", label: "Create agent", match: (path) => path === "/desk/create" },
-  { href: "/desk/agents", label: "Explore agents", match: (path) => path.startsWith("/desk/agents") },
-];
+import { LanguageToggle } from "./LanguageToggle";
 
 export const BALANCE_EVENT = "held:balance";
 
 export function DeskShell({ children }) {
   const pathname = usePathname();
+  const { t } = useI18n();
   const { address, connected, isDemo } = useSigner();
+  const links = [
+    { href: "/desk", label: t.desk.mine, match: (path) => path === "/desk" },
+    { href: "/desk/create", label: t.desk.create, match: (path) => path === "/desk/create" },
+    { href: "/desk/agents", label: t.desk.explore, match: (path) => path.startsWith("/desk/agents") },
+  ];
   const [balance, setBalance] = useState(null);
 
   useEffect(() => {
@@ -38,17 +40,17 @@ export function DeskShell({ children }) {
     return () => window.removeEventListener(BALANCE_EVENT, read);
   }, [address]);
 
-  const chainName = heldChain.id === 56 ? "BNB Smart Chain" : `Local chain · ${heldChain.id}`;
+  const chainName = heldChain.id === 56 ? t.desk.bsc : `${t.desk.local} · ${heldChain.id}`;
 
   return (
     <div className="app">
       <aside className="sidebar">
         <Link className="brand" href="/">
           <span className="mark" />
-          <strong>held</strong>
+          <strong>Society</strong>
         </Link>
-        <nav className="side-nav" aria-label="Desk">
-          <p className="side-label">Desk</p>
+        <nav className="side-nav" aria-label={t.desk.label}>
+          <p className="side-label">{t.desk.label}</p>
           {links.map((link) => (
             <Link key={link.href} href={link.href} className={link.match(pathname) ? "active" : undefined}>
               {link.label}
@@ -57,18 +59,18 @@ export function DeskShell({ children }) {
         </nav>
         <div className="side-foot">
           <div className="wallet-card">
-            <p className="side-label">Wallet</p>
+            <p className="side-label">{t.desk.wallet}</p>
             {address ? (
               <>
                 <p className="mono">{shortAddress(address)}</p>
-                <p className="wallet-kind">{isDemo ? "Local demo wallet" : "Browser wallet"}</p>
+                <p className="wallet-kind">{isDemo ? t.desk.demo : t.desk.browser}</p>
                 <div className="wallet-balance">
-                  <span>$HELD</span>
+                  <span>$SOCIETY</span>
                   <strong>{balance === null ? "—" : formatToken(balance)}</strong>
                 </div>
               </>
             ) : (
-              <p className="wallet-kind">No wallet connected.</p>
+              <p className="wallet-kind">{t.desk.none}</p>
             )}
           </div>
           <p className="chain-tag">
@@ -80,9 +82,12 @@ export function DeskShell({ children }) {
       <div className="app-main">
         <div className="app-topbar">
           <Link href="/" className="topbar-back">
-            ← Held home
+            {t.desk.home}
           </Link>
-          <ConnectButton className={connected ? "btn btn-ghost" : "btn btn-primary"} />
+          <div className="row">
+            <LanguageToggle />
+            <ConnectButton className={connected ? "btn btn-ghost" : "btn btn-primary"} />
+          </div>
         </div>
         <div className="app-content">{children}</div>
       </div>

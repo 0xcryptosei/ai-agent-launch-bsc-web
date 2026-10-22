@@ -16,17 +16,17 @@ import {
   timeAgo,
   watchesCovered,
 } from "../../../../lib/format";
+import { useI18n } from "../../../../lib/i18n";
 import { useSigner } from "../../../../lib/useSigner";
 
-const TABS = [
-  ["history", "Work history"],
-  ["order", "Order"],
-  ["contracts", "Addresses"],
-];
-
-const STATUS_LABEL = { sent: "Launched", preview: "Preview", failed: "Failed" };
-
 export default function AgentPage() {
+  const { t, lang } = useI18n();
+  const tabs = [
+    ["history", t.agent.history],
+    ["order", t.agent.order],
+    ["contracts", t.agent.addresses],
+  ];
+  const statusLabel = { sent: t.agent.launched, preview: t.agent.preview, failed: t.agent.failed };
   const params = useParams();
   const id = params.id;
   const [onchain, setOnchain] = useState(null);
@@ -90,7 +90,7 @@ export default function AgentPage() {
         args: [address, deskAddress],
       });
       if (allowance < amount) {
-        setStatus("Approving $HELD…");
+        setStatus(t.agent.approving);
         const approveHash = await wallet.writeContract({
           address: heldAddress,
           abi: heldAbi,
@@ -99,7 +99,7 @@ export default function AgentPage() {
         });
         await publicClient.waitForTransactionReceipt({ hash: approveHash });
       }
-      setStatus("Burning $HELD…");
+      setStatus(t.agent.burning);
       const hash = await wallet.writeContract({
         address: deskAddress,
         abi: deskAbi,
@@ -107,7 +107,7 @@ export default function AgentPage() {
         args: [BigInt(id), amount],
       });
       await publicClient.waitForTransactionReceipt({ hash });
-      setStatus(`Burned ${burn} $HELD. The agent can spend this credit.`);
+      setStatus(t.agent.burned.replace("{amount}", burn));
       window.dispatchEvent(new Event(BALANCE_EVENT));
       await load();
     } catch (err) {
@@ -123,7 +123,7 @@ export default function AgentPage() {
     begin();
     try {
       const token = window.localStorage.getItem(`held-export-${id}`);
-      if (!token) throw new Error("This browser does not have the export token for this agent.");
+      if (!token) throw new Error(t.agent.noExport);
       const updated = await fetch(`${apiUrl}/api/agents/${id}/query`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -148,9 +148,9 @@ export default function AgentPage() {
       });
       await publicClient.waitForTransactionReceipt({ hash });
       if (updated.queryHash.toLowerCase() !== keccak256(stringToBytes(query.trim())).toLowerCase()) {
-        throw new Error("The saved watch list does not match the order.");
+        throw new Error(t.agent.mismatch);
       }
-      setStatus(onchain.active ? "Watch list updated." : "Watch list updated. The agent is running again.");
+      setStatus(onchain.active ? t.agent.updated : t.agent.resumed);
       await load();
     } catch (err) {
       setError(err.shortMessage || err.message);
@@ -169,7 +169,7 @@ export default function AgentPage() {
         args: [BigInt(id)],
       });
       await publicClient.waitForTransactionReceipt({ hash });
-      setStatus("Agent paused. Save the watch list to run it again.");
+      setStatus(t.agent.paused);
       await load();
     } catch (err) {
       setError(err.shortMessage || err.message);
@@ -182,7 +182,7 @@ export default function AgentPage() {
     setError("");
     const token = window.localStorage.getItem(`held-export-${id}`);
     if (!token) {
-      setError("This browser does not have the export token for this agent.");
+      setError(t.agent.noExport);
       return;
     }
     const response = await fetch(`${apiUrl}/api/agents/${id}/key`, { headers: { "X-Export-Token": token } });
@@ -197,9 +197,9 @@ export default function AgentPage() {
   if (!onchain) {
     return (
       <div className="agent-loading">
-        {error ? <p className="notice notice-error">{error}</p> : <p className="muted">Loading the agent…</p>}
+        {error ? <p className="notice notice-error">{error}</p> : <p className="muted">{t.agent.loading}</p>}
         <Link className="btn btn-ghost" href="/desk/agents">
-          ← Back to agents
+          {t.agent.back}
         </Link>
       </div>
     );
@@ -211,7 +211,7 @@ export default function AgentPage() {
   return (
     <>
       <Link className="back-link" href="/desk/agents">
-        ← All agents
+        {t.agent.all}
       </Link>
 
       <header className="agent-head">
@@ -223,25 +223,25 @@ export default function AgentPage() {
             <StatusBadge active={onchain.active} />
           </div>
           <p className="muted">
-            Agent #{id} · created by <span className="mono">{shortAddress(onchain.owner)}</span>
-            {isOwner ? <span className="pill">You</span> : null}
+            Agent #{id} · {t.agent.createdBy} <span className="mono">{shortAddress(onchain.owner)}</span>
+            {isOwner ? <span className="pill">{t.common.you}</span> : null}
           </p>
         </div>
       </header>
 
       <div className="stats stats-6">
-        <Stat label="Credit" value={`${formatToken(onchain.credit)} HELD`} hint="Burned, ready to spend" />
-        <Stat label="Watches covered" value={watchesCovered(onchain.credit)} hint="1 HELD each" />
-        <Stat label="Launches covered" value={launchesCovered(onchain.credit)} hint="11 HELD with the watch" />
-        <Stat label="Score line" value={`${onchain.minScore} / 100`} />
-        <Stat label="Daily cap" value={onchain.maxLaunchesPerDay} hint="Launches per day" />
-        <Stat label="Max first buy" value={`${formatToken(onchain.maxBuyWei, 4)} BNB`} />
+        <Stat label={t.common.credit} value={`${formatToken(onchain.credit)} SOCIETY`} hint={t.common.burnedReady} />
+        <Stat label={t.agent.watches} value={watchesCovered(onchain.credit)} hint={t.agent.watchesHint} />
+        <Stat label={t.agent.launches} value={launchesCovered(onchain.credit)} hint={t.agent.launchesHint} />
+        <Stat label={t.common.scoreLine} value={`${onchain.minScore} / 100`} />
+        <Stat label={t.common.dailyCap} value={onchain.maxLaunchesPerDay} hint={t.agent.perDayHint} />
+        <Stat label={t.agent.maxBuy} value={`${formatToken(onchain.maxBuyWei, 4)} BNB`} />
       </div>
 
       <div className="agent-layout">
         <section className="panel">
           <div className="tabs" role="tablist">
-            {TABS.map(([value, label]) => (
+            {tabs.map(([value, label]) => (
               <button
                 key={value}
                 type="button"
@@ -260,7 +260,7 @@ export default function AgentPage() {
             <>
               {record?.lastReason ? (
                 <div className="last-pass">
-                  <span className="side-label">Last pass</span>
+                  <span className="side-label">{t.agent.lastPass}</span>
                   <p>{record.lastReason}</p>
                 </div>
               ) : null}
@@ -274,7 +274,7 @@ export default function AgentPage() {
                           <strong>
                             {launch.name} <span className="mono muted">${launch.symbol}</span>
                           </strong>
-                          <span className={`pill pill-${launch.status}`}>{STATUS_LABEL[launch.status] ?? launch.status}</span>
+                          <span className={`pill pill-${launch.status}`}>{statusLabel[launch.status] ?? launch.status}</span>
                         </div>
                         {launch.post ? <blockquote>{launch.post}</blockquote> : null}
                         <div className="timeline-score">
@@ -283,16 +283,16 @@ export default function AgentPage() {
                         </div>
                         <p className="muted">{launch.reason}</p>
                         <div className="timeline-meta">
-                          {launch.at ? <span>{timeAgo(launch.at)}</span> : null}
-                          {launch.sample ? <span>Sample post</span> : null}
+                          {launch.at ? <span>{timeAgo(launch.at, lang)}</span> : null}
+                          {launch.sample ? <span>{t.agent.sample}</span> : null}
                           {launch.token ? (
                             <span className="mono">
-                              {launch.status === "sent" ? "Token" : "Predicted"} {shortAddress(launch.token)}
+                              {launch.status === "sent" ? t.agent.token : t.agent.predicted} {shortAddress(launch.token)}
                             </span>
                           ) : null}
                           {launch.status === "sent" ? (
                             <a href={`https://flap.sh/bnb/${launch.token}`} target="_blank" rel="noreferrer">
-                              View on Flap ↗
+                              {t.agent.flap}
                             </a>
                           ) : null}
                         </div>
@@ -301,10 +301,8 @@ export default function AgentPage() {
                   ))}
                 </ol>
               ) : (
-                <Empty title="No work yet">
-                  {onchain.credit > 0n
-                    ? "The agent has credit. The worker will take its next pass soon."
-                    : "Burn $HELD so the agent can take its first pass."}
+                <Empty title={t.agent.noWork}>
+                  {onchain.credit > 0n ? t.agent.hasCredit : t.agent.needBurn}
                 </Empty>
               )}
             </>
@@ -313,32 +311,32 @@ export default function AgentPage() {
           {tab === "order" ? (
             <dl className="kv kv-wide">
               <div>
-                <dt>Status</dt>
+                <dt>{t.common.status}</dt>
                 <dd>
                   <StatusBadge active={onchain.active} />
                 </dd>
               </div>
               <div>
-                <dt>Watch list</dt>
-                <dd>{record?.query || <span className="muted">Held by the worker</span>}</dd>
+                <dt>{t.agent.watchList}</dt>
+                <dd>{record?.query || <span className="muted">{t.agent.stored}</span>}</dd>
               </div>
               <div>
-                <dt>Score line</dt>
+                <dt>{t.common.scoreLine}</dt>
                 <dd className="score-dd">
                   <ScoreBar value={onchain.minScore} />
                   <span className="mono">{onchain.minScore}</span>
                 </dd>
               </div>
               <div>
-                <dt>Launches per day</dt>
+                <dt>{t.create.perDay}</dt>
                 <dd className="mono">{onchain.maxLaunchesPerDay}</dd>
               </div>
               <div>
-                <dt>Max first buy</dt>
+                <dt>{t.agent.maxBuy}</dt>
                 <dd className="mono">{formatEther(onchain.maxBuyWei)} BNB</dd>
               </div>
               <div>
-                <dt>Watch list hash</dt>
+                <dt>{t.agent.hash}</dt>
                 <dd>
                   <CopyText value={onchain.queryHash} short={shortAddress(onchain.queryHash)} />
                 </dd>
@@ -349,26 +347,26 @@ export default function AgentPage() {
           {tab === "contracts" ? (
             <dl className="kv kv-wide">
               <div>
-                <dt>Agent meme</dt>
+                <dt>{t.agent.meme}</dt>
                 <dd>
                   <CopyText value={onchain.meme} />
                 </dd>
               </div>
               <div>
-                <dt>Owner</dt>
+                <dt>{t.common.owner}</dt>
                 <dd>
                   <CopyText value={onchain.owner} />
                 </dd>
               </div>
               <div>
-                <dt>Launch wallet</dt>
+                <dt>{t.agent.launchWallet}</dt>
                 <dd>
                   <CopyText value={onchain.launchWallet} />
                 </dd>
               </div>
               <div>
-                <dt>Image or note</dt>
-                <dd className="break">{onchain.metaUri || <span className="muted">None</span>}</dd>
+                <dt>{t.agent.image}</dt>
+                <dd className="break">{onchain.metaUri || <span className="muted">{t.agent.none}</span>}</dd>
               </div>
             </dl>
           ) : null}
@@ -379,15 +377,15 @@ export default function AgentPage() {
             <>
               <form className="panel" onSubmit={burnForWork}>
                 <div className="row-between">
-                  <h3>Burn $HELD</h3>
+                  <h3>{t.agent.burnTitle}</h3>
                   <span className="muted small">
-                    Balance <span className="mono">{balance === null ? "—" : formatToken(balance)}</span>
+                    {t.agent.balance} <span className="mono">{balance === null ? "—" : formatToken(balance)}</span>
                   </span>
                 </div>
-                <p className="muted small">Burned $HELD becomes this agent's credit. A watch costs 1 and a launch costs 10.</p>
+                <p className="muted small">{t.agent.burnCopy}</p>
                 <span className="input-suffix">
                   <input className="mono" inputMode="decimal" value={burn} onChange={(event) => setBurn(event.target.value)} />
-                  <em>HELD</em>
+                  <em>SOCIETY</em>
                 </span>
                 <div className="chips">
                   {["11", "22", "55", "110"].map((value) => (
@@ -397,34 +395,32 @@ export default function AgentPage() {
                   ))}
                 </div>
                 <button className="btn btn-primary btn-block" disabled={busy} type="submit">
-                  Burn for this agent
+                  {t.agent.burnBtn}
                 </button>
               </form>
 
               <form className="panel" onSubmit={saveQuery}>
-                <h3>Watch list</h3>
-                <p className="muted small">Saving writes the order again, and runs the agent if it was paused.</p>
+                <h3>{t.agent.watchList}</h3>
+                <p className="muted small">{t.agent.watchCopy}</p>
                 <textarea value={query} onChange={(event) => setQuery(event.target.value)} />
                 <div className="row">
                   <button className="btn btn-dark" disabled={busy} type="submit">
-                    Save order
+                    {t.agent.save}
                   </button>
                   <button className="btn btn-ghost" disabled={busy || !onchain.active} type="button" onClick={pause}>
-                    Pause agent
+                    {t.agent.pause}
                   </button>
                 </div>
               </form>
 
               <div className="panel panel-danger">
-                <h3>Launch key</h3>
-                <p className="muted small">
-                  The private key of the agent wallet that launches on Flap. Anyone with it can move that wallet's BNB.
-                </p>
+                <h3>{t.agent.key}</h3>
+                <p className="muted small">{t.agent.keyCopy}</p>
                 {exported ? (
                   <CopyText value={exported} short={`${exported.slice(0, 10)}…${exported.slice(-6)}`} />
                 ) : (
                   <button className="btn btn-ghost" type="button" onClick={revealKey}>
-                    Export launch key
+                    {t.agent.export}
                   </button>
                 )}
               </div>
@@ -434,14 +430,13 @@ export default function AgentPage() {
             </>
           ) : (
             <div className="panel">
-              <h3>Read only</h3>
+              <h3>{t.agent.readOnly}</h3>
               <p className="muted small">
-                Burning, pausing, and the launch key belong to the wallet that created this agent,{" "}
-                <span className="mono">{shortAddress(onchain.owner)}</span>.
+                {t.agent.readCopy} <span className="mono">{shortAddress(onchain.owner)}</span>.
               </p>
               {error ? <p className="notice notice-error">{error}</p> : null}
               <Link className="btn btn-primary btn-block" href="/desk/create">
-                Create your own agent
+                {t.agent.own}
               </Link>
             </div>
           )}

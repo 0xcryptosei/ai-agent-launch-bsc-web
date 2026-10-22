@@ -6,17 +6,18 @@ import { AgentAvatar, Empty, PageHead, Stat, StatusBadge } from "../../../compon
 import { deskAddress } from "../../../lib/abi";
 import { loadAllAgents } from "../../../lib/agents";
 import { formatToken, sameAddress, shortAddress } from "../../../lib/format";
+import { useI18n } from "../../../lib/i18n";
 import { useSigner } from "../../../lib/useSigner";
 
-const filters = [
-  ["all", "All"],
-  ["running", "Running"],
-  ["paused", "Paused"],
-  ["mine", "Mine"],
-];
-
 export default function ExplorePage() {
+  const { t } = useI18n();
   const { address } = useSigner();
+  const filters = [
+    ["all", t.explore.all],
+    ["running", t.explore.running],
+    ["paused", t.explore.paused],
+    ["mine", t.explore.mine],
+  ];
   const [agents, setAgents] = useState(null);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -25,8 +26,8 @@ export default function ExplorePage() {
   useEffect(() => {
     loadAllAgents()
       .then(setAgents)
-      .catch(() => setError("The desk is not reachable. Start the chain, then reload."));
-  }, []);
+      .catch(() => setError(t.common.unreachable));
+  }, [t]);
 
   const shown = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -43,23 +44,23 @@ export default function ExplorePage() {
 
   return (
     <>
-      <PageHead eyebrow="Explore" title="Agents on Held">
-        Every agent the Held contract has created. Anyone can open an agent and read its order and work history.
+      <PageHead eyebrow={t.explore.eyebrow} title={t.explore.title}>
+        {t.explore.lede}
       </PageHead>
 
-      {!deskAddress ? <p className="notice notice-error">The desk address is not configured.</p> : null}
+      {!deskAddress ? <p className="notice notice-error">{t.common.noDesk}</p> : null}
       {error ? <p className="notice notice-error">{error}</p> : null}
 
       <div className="stats">
-        <Stat label="Agents" value={agents ? agents.length : "—"} />
-        <Stat label="Running" value={agents ? agents.filter((agent) => agent.active).length : "—"} />
-        <Stat label="Credit on the desk" value={agents ? `${formatToken(totalCredit)} HELD` : "—"} />
+        <Stat label={t.mine.agents} value={agents ? agents.length : "—"} />
+        <Stat label={t.common.running} value={agents ? agents.filter((agent) => agent.active).length : "—"} />
+        <Stat label={t.explore.credit} value={agents ? `${formatToken(totalCredit)} SOCIETY` : "—"} />
       </div>
 
       <div className="toolbar">
         <input
           className="search"
-          placeholder="Search by name, symbol, or owner"
+          placeholder={t.explore.search}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -79,17 +80,17 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      {agents === null && !error ? <p className="muted">Reading the desk…</p> : null}
-      {agents && shown.length === 0 ? <Empty title="No agents match">Try another search or filter.</Empty> : null}
+      {agents === null && !error ? <p className="muted">{t.common.reading}</p> : null}
+      {agents && shown.length === 0 ? <Empty title={t.explore.emptyTitle}>{t.explore.emptyCopy}</Empty> : null}
 
       {shown.length ? (
         <div className="table table-explore">
           <div className="table-row table-head">
-            <span>Agent</span>
-            <span>Owner</span>
-            <span>Status</span>
-            <span>Score line</span>
-            <span>Credit</span>
+            <span>{t.common.agent}</span>
+            <span>{t.common.owner}</span>
+            <span>{t.common.status}</span>
+            <span>{t.common.scoreLine}</span>
+            <span>{t.common.credit}</span>
             <span />
           </div>
           {shown.map((agent) => (
@@ -101,20 +102,20 @@ export default function ExplorePage() {
                   <span className="mono muted">${agent.symbol}</span>
                 </span>
               </span>
-              <span data-label="Owner" className="mono">
+              <span data-label={t.common.owner} className="mono">
                 {shortAddress(agent.owner)}
-                {sameAddress(agent.owner, address) ? <span className="pill">You</span> : null}
+                {sameAddress(agent.owner, address) ? <span className="pill">{t.common.you}</span> : null}
               </span>
-              <span data-label="Status">
+              <span data-label={t.common.status}>
                 <StatusBadge active={agent.active} />
               </span>
-              <span data-label="Score line" className="mono">
+              <span data-label={t.common.scoreLine} className="mono">
                 {agent.minScore}
               </span>
-              <span data-label="Credit" className="mono">
-                {formatToken(agent.credit)} HELD
+              <span data-label={t.common.credit} className="mono">
+                {formatToken(agent.credit)} SOCIETY
               </span>
-              <span className="table-action">View →</span>
+              <span className="table-action">{t.common.view}</span>
             </Link>
           ))}
         </div>

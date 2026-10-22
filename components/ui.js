@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useI18n } from "../lib/i18n";
 
 function hueOf(text) {
   let total = 0;
@@ -17,10 +18,11 @@ export function AgentAvatar({ symbol, size = "md" }) {
 }
 
 export function StatusBadge({ active }) {
+  const { t } = useI18n();
   return (
     <span className={`badge ${active ? "badge-on" : "badge-off"}`}>
       <i />
-      {active ? "Running" : "Paused"}
+      {active ? t.common.running : t.common.paused}
     </span>
   );
 }
@@ -45,6 +47,7 @@ export function Stat({ label, value, hint }) {
 }
 
 export function CopyText({ value, short }) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   if (!value) return <span className="mono muted">—</span>;
   return (
@@ -59,7 +62,7 @@ export function CopyText({ value, short }) {
       }}
     >
       <span className="mono">{short ?? value}</span>
-      <span className="copy-hint">{copied ? "Copied" : "Copy"}</span>
+      <span className="copy-hint">{copied ? t.common.copied : t.common.copy}</span>
     </button>
   );
 }

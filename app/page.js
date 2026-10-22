@@ -3,66 +3,38 @@
 import Link from "next/link";
 import { BscScanIcon, FlapIcon, TelegramIcon, XIcon } from "../components/BrandIcons";
 import { ConnectButton } from "../components/ConnectButton";
+import { LanguageToggle } from "../components/LanguageToggle";
+import { useI18n } from "../lib/i18n";
 import { bscscanUrl, flapUrl, telegramUrl, xUrl } from "../lib/links";
 
-const footerLinks = [
-  ["X", xUrl, XIcon],
-  ["Telegram", telegramUrl, TelegramIcon],
-  ["$HELD on BscScan", bscscanUrl, BscScanIcon],
-  ["$HELD on Flap", flapUrl, FlapIcon],
-];
-
-const steps = [
-  {
-    title: "Create on Held",
-    copy: "The Held contract deploys the agent's own meme to your wallet and records you as its owner. Flap is not called.",
-    tag: "Held contract",
-  },
-  {
-    title: "Write the order",
-    copy: "Name the posts to watch on X, the score line from 0 to 100, the daily launch cap, and the most BNB for a first buy.",
-    tag: "Your rules",
-  },
-  {
-    title: "Burn $HELD",
-    copy: "Burned $HELD becomes the agent's credit. A watch costs 1. A launch costs 10. The tokens are destroyed, not held.",
-    tag: "Fuel",
-  },
-  {
-    title: "Launch on Flap",
-    copy: "When a public post scores at or above your line, the agent wallet launches a separate BNB token on Flap.",
-    tag: "Flap Portal",
-  },
-];
-
-const faqs = [
-  ["Does creating an agent launch a token on Flap?", "No. Creating an agent calls the Held contract. It deploys the agent's meme and records you as the owner. Flap is only used later, when a post crosses the score you set."],
-  ["What does burning $HELD pay for?", "It pays for the agent to work. Each watch spends 1 $HELD of credit and each launch spends 10. The tokens you burn are destroyed, so the supply goes down."],
-  ["Who can run an agent?", "Only the wallet that created it can burn for it, change its watch list, pause it, or export its launch key. Anyone can open its page and read the work history."],
-  ["What does the agent read?", "Public posts on X that match the watch list you write. It scores each post from 0 to 100 against your order."],
-  ["What is launched on Flap?", "A standard token quoted in BNB, through the Flap Portal on BSC. The agent wallet is the creator. Your order caps the first buy."],
-  ["Is a high score a promise?", "No. The score is the line you set for when to launch. A token launched from it can lose all of its value."],
-];
-
 export default function LandingPage() {
+  const { t } = useI18n();
+  const footerLinks = [
+    ["X", xUrl, XIcon],
+    ["Telegram", telegramUrl, TelegramIcon],
+    [t.footer.bscscan, bscscanUrl, BscScanIcon],
+    [t.footer.flap, flapUrl, FlapIcon],
+  ];
+
   return (
     <div className="site">
       <header className="site-header">
         <div className="container site-bar">
           <Link className="brand" href="#home">
             <span className="mark" />
-            <strong>held</strong>
+            <strong>Society</strong>
           </Link>
           <nav className="site-nav" aria-label="Sections">
-            <a href="#home">Home</a>
-            <a href="#about">About</a>
-            <a href="#feature">Feature</a>
-            <a href="#faq">FAQ</a>
+            <a href="#home">{t.nav.home}</a>
+            <a href="#about">{t.nav.about}</a>
+            <a href="#feature">{t.nav.feature}</a>
+            <a href="#faq">{t.nav.faq}</a>
           </nav>
           <div className="row">
+            <LanguageToggle />
             <ConnectButton className="btn btn-ghost" />
             <Link className="btn btn-dark" href="/desk">
-              Launch app
+              {t.launchApp}
             </Link>
           </div>
         </div>
@@ -71,31 +43,24 @@ export default function LandingPage() {
       <main>
         <section className="hero container" id="home">
           <div className="hero-copy">
-            <p className="eyebrow">
-              <i className="dot-live" />
-              Live on BSC · Launches on Flap
-            </p>
             <h1>
-              Agents that launch
+              {t.hero.line1}
               <br />
-              <span>when the post is strong enough.</span>
+              <span>{t.hero.line2}</span>
             </h1>
-            <p className="hero-lede">
-              Create an agent on Held, give it an order, and burn $HELD so it can work. It reads public posts and
-              launches a token on Flap only when a post crosses the line you set.
-            </p>
+            <p className="hero-lede">{t.hero.lede}</p>
             <div className="row">
               <Link className="btn btn-primary btn-lg" href="/desk/create">
-                Create an agent
+                {t.hero.create}
               </Link>
               <Link className="btn btn-ghost btn-lg" href="/desk/agents">
-                Explore agents
+                {t.hero.explore}
               </Link>
             </div>
-            <p className="hero-note">Creating an agent does not launch a token on Flap.</p>
+            <p className="hero-note">{t.hero.note}</p>
           </div>
 
-          <div className="console" aria-label="An agent working through a post">
+          <div className="console" aria-label={t.hero.console}>
             <div className="console-head">
               <span className="avatar avatar-md" style={{ "--hue": 28 }}>
                 OC
@@ -106,40 +71,40 @@ export default function LandingPage() {
               </div>
               <span className="badge badge-on">
                 <i />
-                Running
+                {t.hero.running}
               </span>
             </div>
             <div className="console-order">
               <div>
-                <span>Score line</span>
+                <span>{t.hero.scoreLine}</span>
                 <strong>70</strong>
               </div>
               <div>
-                <span>Daily cap</span>
+                <span>{t.hero.dailyCap}</span>
                 <strong>3</strong>
               </div>
               <div>
-                <span>Credit</span>
-                <strong>20 HELD</strong>
+                <span>{t.hero.credit}</span>
+                <strong>20 SOCIETY</strong>
               </div>
             </div>
             <div className="console-post">
-              <p className="console-label">Public post</p>
-              <p>"The orange cat that runs the timeline just got its own coin page. ORANGECAT is everywhere today."</p>
+              <p className="console-label">{t.hero.publicPost}</p>
+              <p>{t.hero.post}</p>
             </div>
             <div className="console-score">
               <div className="row-between">
-                <span className="console-label">Score</span>
+                <span className="console-label">{t.hero.score}</span>
                 <strong className="mono">96 / 100</strong>
               </div>
               <span className="scorebar">
                 <span className="scorebar-fill" style={{ width: "96%" }} />
                 <span className="scorebar-line" style={{ left: "70%" }} />
               </span>
-              <p className="console-meta">Crosses the line at 70</p>
+              <p className="console-meta">{t.hero.crosses}</p>
             </div>
             <div className="console-result">
-              <span className="pill pill-amber">Launch</span>
+              <span className="pill pill-amber">{t.hero.launch}</span>
               <span>
                 ORANGECAT on Flap · <span className="mono">0xbD49…8888</span>
               </span>
@@ -149,51 +114,45 @@ export default function LandingPage() {
 
         <section className="container strip" aria-label="Key numbers">
           <div>
-            <strong>1 $HELD</strong>
-            <span>per watch</span>
+            <strong>1 $SOCIETY</strong>
+            <span>{t.strip.watch}</span>
           </div>
           <div>
-            <strong>10 $HELD</strong>
-            <span>per launch</span>
+            <strong>10 $SOCIETY</strong>
+            <span>{t.strip.launch}</span>
           </div>
           <div>
             <strong>0–100</strong>
-            <span>your score line</span>
+            <span>{t.strip.line}</span>
           </div>
           <div>
             <strong>BSC</strong>
-            <span>chain for every token</span>
+            <span>{t.strip.chain}</span>
           </div>
         </section>
 
         <section className="section container" id="about">
           <div className="section-head">
-            <p className="eyebrow">About</p>
-            <h2>The agent lives on Held. Its launches go to Flap.</h2>
-            <p>
-              Held keeps two steps apart. Creating and running an agent is on the Held contract. A Flap token comes
-              later, and only from a post that crosses your line.
-            </p>
+            <h2>{t.about.title}</h2>
+            <p>{t.about.lede}</p>
           </div>
           <div className="split">
             <article className="split-card">
-              <p className="split-tag">On Held</p>
-              <h3>Create and run</h3>
+              <p className="split-tag">{t.about.onSociety}</p>
+              <h3>{t.about.createRun}</h3>
               <ul className="checks">
-                <li>Deploys the agent's own meme to your wallet</li>
-                <li>Stores the order: score line, daily cap, max first buy</li>
-                <li>Burns $HELD into credit for the agent</li>
-                <li>Only you can change, pause, or fuel it</li>
+                {t.about.points.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
               </ul>
             </article>
             <article className="split-card split-dark">
-              <p className="split-tag">On Flap</p>
-              <h3>Launch when it counts</h3>
+              <p className="split-tag">{t.about.onFlap}</p>
+              <h3>{t.about.launchCounts}</h3>
               <ul className="checks">
-                <li>A post scores at or above your line</li>
-                <li>The agent wallet launches a standard BNB token</li>
-                <li>The first buy stays under your cap</li>
-                <li>Each launch shows up in the agent's work history</li>
+                {t.about.flapPoints.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
               </ul>
             </article>
           </div>
@@ -201,40 +160,39 @@ export default function LandingPage() {
 
         <section className="section container" id="feature">
           <div className="section-head">
-            <p className="eyebrow">Feature</p>
-            <h2>From an order to a token in four steps.</h2>
-            <p>You set the rules once. The agent follows them on every pass and records what it did.</p>
+            <h2>{t.feature.title}</h2>
+            <p>{t.feature.lede}</p>
           </div>
           <ol className="flow">
-            {steps.map((step, index) => (
-              <li key={step.title}>
+            {t.steps.map(([title, copy, tag], index) => (
+              <li key={title}>
                 <span className="flow-num mono">0{index + 1}</span>
-                <span className="flow-tag">{step.tag}</span>
-                <h3>{step.title}</h3>
-                <p>{step.copy}</p>
+                <span className="flow-tag">{tag}</span>
+                <h3>{title}</h3>
+                <p>{copy}</p>
               </li>
             ))}
           </ol>
           <div className="pricing">
             <div className="price-card">
-              <p className="price-label">Watch</p>
+              <p className="price-label">{t.feature.watch}</p>
               <p className="price">
-                1 <span>$HELD</span>
+                1 <span>$SOCIETY</span>
               </p>
-              <p>The agent reads a public post and scores it against your order.</p>
+              <p>{t.feature.watchCopy}</p>
             </div>
             <div className="price-card">
-              <p className="price-label">Launch</p>
+              <p className="price-label">{t.feature.launch}</p>
               <p className="price">
-                10 <span>$HELD</span>
+                10 <span>$SOCIETY</span>
               </p>
-              <p>On top of the watch. The agent launches a token on Flap from that post.</p>
+              <p>{t.feature.launchCopy}</p>
             </div>
             <div className="price-card price-note">
-              <p className="price-label">Burned, not held</p>
-              <p>Every $HELD you put into an agent is burned on the contract. It becomes credit, and the supply goes down.</p>
+              <p className="price-label">{t.feature.burned}</p>
+              <p>{t.feature.burnedCopy}</p>
               <Link className="btn btn-dark" href="/desk/create">
-                Create an agent
+                {t.hero.create}
               </Link>
             </div>
           </div>
@@ -243,12 +201,11 @@ export default function LandingPage() {
         <section className="section container" id="faq">
           <div className="faq-layout">
             <div className="section-head">
-              <p className="eyebrow">FAQ</p>
-              <h2>What Held does, and what it does not.</h2>
-              <p>The links for X, Telegram, BscScan, and Flap are in the footer.</p>
+              <h2>{t.faq.title}</h2>
+              <p>{t.faq.lede}</p>
             </div>
             <div className="faq">
-              {faqs.map(([question, answer]) => (
+              {t.faq.items.map(([question, answer]) => (
                 <details key={question}>
                   <summary>{question}</summary>
                   <p>{answer}</p>
@@ -261,11 +218,11 @@ export default function LandingPage() {
         <section className="container">
           <div className="cta">
             <div>
-              <h2>Give an agent your order.</h2>
-              <p>Create it on Held now. It launches on Flap only when a post earns it.</p>
+              <h2>{t.cta.title}</h2>
+              <p>{t.cta.copy}</p>
             </div>
             <Link className="btn btn-primary btn-lg" href="/desk/create">
-              Create an agent
+              {t.hero.create}
             </Link>
           </div>
         </section>
@@ -275,30 +232,30 @@ export default function LandingPage() {
         <div>
           <Link className="brand" href="#home">
             <span className="mark" />
-            <strong>held</strong>
+            <strong>Society</strong>
           </Link>
-          <p>Agents on Held. Tokens on Flap. Everything on BSC.</p>
+          <p>{t.footer.tag}</p>
         </div>
-        <nav className="footer-links" aria-label="Held links">
+        <nav className="footer-links" aria-label={t.footer.links}>
           {footerLinks.map(([label, href, Icon]) =>
             href ? (
               <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} title={label}>
                 <Icon />
               </a>
             ) : (
-              <span key={label} aria-label={`${label} is not set`} title={label}>
+              <span key={label} aria-label={`${label} ${t.footer.unset}`} title={label}>
                 <Icon />
               </span>
             )
           )}
         </nav>
-        <nav aria-label="Footer">
-          <a href="#about">About</a>
-          <a href="#feature">Feature</a>
-          <a href="#faq">FAQ</a>
-          <Link href="/desk">Launch app</Link>
+        <nav aria-label={t.footer.nav}>
+          <a href="#about">{t.nav.about}</a>
+          <a href="#feature">{t.nav.feature}</a>
+          <a href="#faq">{t.nav.faq}</a>
+          <Link href="/desk">{t.launchApp}</Link>
         </nav>
-        <small>A score is the line you set. It is not a promise that a token will hold value.</small>
+        <small>{t.footer.note}</small>
       </footer>
     </div>
   );

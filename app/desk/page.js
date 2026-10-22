@@ -7,9 +7,11 @@ import { AgentAvatar, Empty, PageHead, Stat, StatusBadge } from "../../component
 import { deskAddress } from "../../lib/abi";
 import { loadAllAgents } from "../../lib/agents";
 import { formatToken, launchesCovered, sameAddress } from "../../lib/format";
+import { useI18n } from "../../lib/i18n";
 import { useSigner } from "../../lib/useSigner";
 
 export default function MyAgentsPage() {
+  const { t } = useI18n();
   const { address, isDemo } = useSigner();
   const [agents, setAgents] = useState(null);
   const [error, setError] = useState("");
@@ -19,8 +21,8 @@ export default function MyAgentsPage() {
     setError("");
     loadAllAgents()
       .then((rows) => setAgents(rows.filter((agent) => sameAddress(agent.owner, address))))
-      .catch(() => setError("The desk is not reachable. Start the chain, then reload."));
-  }, [address]);
+      .catch(() => setError(t.common.unreachable));
+  }, [address, t]);
 
   const totalCredit = (agents ?? []).reduce((sum, agent) => sum + agent.credit, 0n);
   const running = (agents ?? []).filter((agent) => agent.active).length;
@@ -28,56 +30,56 @@ export default function MyAgentsPage() {
   return (
     <>
       <PageHead
-        eyebrow="Desk"
-        title="My agents"
+        eyebrow={t.desk.label}
+        title={t.mine.title}
         actions={
           <Link className="btn btn-primary" href="/desk/create">
-            New agent
+            {t.mine.new}
           </Link>
         }
       >
-        Agents this wallet created on Held. Open one to burn $HELD, change its order, or read its work history.
+        {t.mine.lede}
       </PageHead>
 
-      {!deskAddress ? <p className="notice notice-error">The desk address is not configured.</p> : null}
+      {!deskAddress ? <p className="notice notice-error">{t.common.noDesk}</p> : null}
       {error ? <p className="notice notice-error">{error}</p> : null}
 
       {!address ? (
-        <Empty title="Connect a wallet" action={<ConnectButton className="btn btn-primary" />}>
-          Your agents are the ones this wallet created on the Held contract.
+        <Empty title={t.mine.connectTitle} action={<ConnectButton className="btn btn-primary" />}>
+          {t.mine.connectCopy}
         </Empty>
       ) : (
         <>
-          {isDemo ? <p className="notice">Using the local demo wallet. Connect a browser wallet to use your own.</p> : null}
+          {isDemo ? <p className="notice">{t.mine.demo}</p> : null}
           <div className="stats">
-            <Stat label="Agents" value={agents ? agents.length : "—"} />
-            <Stat label="Running" value={agents ? running : "—"} hint="Order is active" />
-            <Stat label="Credit" value={agents ? `${formatToken(totalCredit)} HELD` : "—"} hint="Burned, ready to spend" />
-            <Stat label="Launches covered" value={agents ? launchesCovered(totalCredit) : "—"} hint="11 HELD each" />
+            <Stat label={t.mine.agents} value={agents ? agents.length : "—"} />
+            <Stat label={t.common.running} value={agents ? running : "—"} hint={t.common.activeHint} />
+            <Stat label={t.common.credit} value={agents ? `${formatToken(totalCredit)} SOCIETY` : "—"} hint={t.common.burnedReady} />
+            <Stat label={t.mine.launches} value={agents ? launchesCovered(totalCredit) : "—"} hint={t.common.launchesEach} />
           </div>
 
-          {agents === null && !error ? <p className="muted">Reading the desk…</p> : null}
+          {agents === null && !error ? <p className="muted">{t.common.reading}</p> : null}
           {agents?.length === 0 ? (
             <Empty
-              title="No agents yet"
+              title={t.mine.emptyTitle}
               action={
                 <Link className="btn btn-primary" href="/desk/create">
-                  Create your first agent
+                  {t.mine.emptyAction}
                 </Link>
               }
             >
-              Creating an agent calls the Held contract. It does not launch anything on Flap.
+              {t.mine.emptyCopy}
             </Empty>
           ) : null}
 
           {agents?.length ? (
             <div className="table">
               <div className="table-row table-head">
-                <span>Agent</span>
-                <span>Status</span>
-                <span>Score line</span>
-                <span>Daily cap</span>
-                <span>Credit</span>
+                <span>{t.common.agent}</span>
+                <span>{t.common.status}</span>
+                <span>{t.common.scoreLine}</span>
+                <span>{t.common.dailyCap}</span>
+                <span>{t.common.credit}</span>
                 <span />
               </div>
               {agents.map((agent) => (
@@ -89,19 +91,19 @@ export default function MyAgentsPage() {
                       <span className="mono muted">${agent.symbol}</span>
                     </span>
                   </span>
-                  <span data-label="Status">
+                  <span data-label={t.common.status}>
                     <StatusBadge active={agent.active} />
                   </span>
-                  <span data-label="Score line" className="mono">
+                  <span data-label={t.common.scoreLine} className="mono">
                     {agent.minScore}
                   </span>
-                  <span data-label="Daily cap" className="mono">
+                  <span data-label={t.common.dailyCap} className="mono">
                     {agent.maxLaunchesPerDay}
                   </span>
-                  <span data-label="Credit" className="mono">
-                    {formatToken(agent.credit)} HELD
+                  <span data-label={t.common.credit} className="mono">
+                    {formatToken(agent.credit)} SOCIETY
                   </span>
-                  <span className="table-action">Manage →</span>
+                  <span className="table-action">{t.common.manage}</span>
                 </Link>
               ))}
             </div>

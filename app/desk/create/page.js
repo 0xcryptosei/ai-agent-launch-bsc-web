@@ -8,17 +8,11 @@ import { AgentAvatar, PageHead } from "../../../components/ui";
 import { apiUrl, deskAbi, deskAddress } from "../../../lib/abi";
 import { publicClient } from "../../../lib/chain";
 import { shortAddress } from "../../../lib/format";
+import { useI18n } from "../../../lib/i18n";
 import { useSigner } from "../../../lib/useSigner";
 
-const STEPS = [
-  ["Save the watch list", "Worker"],
-  ["Create the agent", "Held contract"],
-  ["Set the launch wallet", "Held contract"],
-  ["Write the order", "Held contract"],
-  ["Register with the worker", "Worker"],
-];
-
 export default function CreatePage() {
+  const { t } = useI18n();
   const router = useRouter();
   const [form, setForm] = useState({
     name: "",
@@ -45,13 +39,13 @@ export default function CreatePage() {
     setFailed(false);
     setBusy(true);
     try {
-      if (!deskAddress) throw new Error("The desk address is not configured. Deploy the contracts first.");
-      if (!address) throw new Error("Connect a wallet on BSC.");
+      if (!deskAddress) throw new Error(t.create.errDesk);
+      if (!address) throw new Error(t.create.errWallet);
       const wallet = client();
       const name = form.name.trim();
       const symbol = form.symbol.trim().toUpperCase();
       const query = form.query.trim();
-      if (!/^[A-Z0-9]{2,8}$/.test(symbol)) throw new Error("Use 2 to 8 letters or numbers for the symbol.");
+      if (!/^[A-Z0-9]{2,8}$/.test(symbol)) throw new Error(t.create.errSymbol);
 
       setStep(0);
       const prepared = await fetch(`${apiUrl}/api/agents/prepare`, {
@@ -81,7 +75,7 @@ export default function CreatePage() {
           }
         })
         .find((log) => log && log.eventName === "AgentCreated");
-      if (!created) throw new Error("The desk did not return the new agent.");
+      if (!created) throw new Error(t.create.errAgent);
       const agentId = created.args.agentId;
 
       setStep(2);
@@ -117,7 +111,7 @@ export default function CreatePage() {
       setStep(5);
       router.push(`/desk/agents/${registered.agentId}`);
     } catch (err) {
-      setError(err.shortMessage || err.message || "The transaction failed.");
+      setError(err.shortMessage || err.message || t.create.errTx);
       setFailed(true);
       setBusy(false);
     }
@@ -128,9 +122,8 @@ export default function CreatePage() {
 
   return (
     <>
-      <PageHead eyebrow="Create" title="Create an agent">
-        This calls the Held contract. It deploys the agent's meme to your wallet and stores its order. It does not
-        launch a token on Flap.
+      <PageHead eyebrow={t.create.eyebrow} title={t.create.title}>
+        {t.create.lede}
       </PageHead>
 
       <div className="create-layout">
@@ -139,13 +132,13 @@ export default function CreatePage() {
             <div className="panel-head">
               <span className="panel-num mono">1</span>
               <div>
-                <h2>Identity</h2>
-                <p>The name and symbol of the agent's meme on Held.</p>
+                <h2>{t.create.identity}</h2>
+                <p>{t.create.identityCopy}</p>
               </div>
             </div>
             <div className="form-two">
               <label className="field">
-                <span>Name</span>
+                <span>{t.create.name}</span>
                 <input
                   value={form.name}
                   maxLength={32}
@@ -155,7 +148,7 @@ export default function CreatePage() {
                 />
               </label>
               <label className="field">
-                <span>Symbol</span>
+                <span>{t.create.symbol}</span>
                 <input
                   className="mono"
                   value={form.symbol}
@@ -164,17 +157,17 @@ export default function CreatePage() {
                   placeholder="OCAT"
                   onChange={(event) => set("symbol", event.target.value.toUpperCase())}
                 />
-                <small>2 to 8 letters or numbers.</small>
+                <small>{t.create.symbolHint}</small>
               </label>
             </div>
             <label className="field">
-              <span>Image or note URL</span>
+              <span>{t.create.image}</span>
               <input
                 value={form.metaUri}
                 placeholder="https:// or ipfs://"
                 onChange={(event) => set("metaUri", event.target.value)}
               />
-              <small>Optional. Up to 200 characters.</small>
+              <small>{t.create.imageHint}</small>
             </label>
           </section>
 
@@ -182,23 +175,23 @@ export default function CreatePage() {
             <div className="panel-head">
               <span className="panel-num mono">2</span>
               <div>
-                <h2>Order</h2>
-                <p>The rules the agent follows on every pass.</p>
+                <h2>{t.create.order}</h2>
+                <p>{t.create.orderCopy}</p>
               </div>
             </div>
             <label className="field">
-              <span>Watch on X</span>
+              <span>{t.create.watch}</span>
               <textarea
                 required
                 value={form.query}
-                placeholder="orange cat, or the accounts and keywords to follow"
+                placeholder={t.create.watchPlaceholder}
                 onChange={(event) => set("query", event.target.value)}
               />
-              <small>Public posts only. The text stays with the worker, and its hash is stored on chain.</small>
+              <small>{t.create.watchHint}</small>
             </label>
             <label className="field">
               <span className="row-between">
-                Score line
+                {t.common.scoreLine}
                 <strong className="mono">{score} / 100</strong>
               </span>
               <input
@@ -210,11 +203,11 @@ export default function CreatePage() {
                 style={{ "--value": `${score}%` }}
                 onChange={(event) => set("minScore", event.target.value)}
               />
-              <small>The agent launches only when a post scores at or above this line.</small>
+              <small>{t.create.scoreHint}</small>
             </label>
             <div className="form-two">
               <label className="field">
-                <span>Launches per day</span>
+                <span>{t.create.perDay}</span>
                 <input
                   className="mono"
                   type="number"
@@ -223,10 +216,10 @@ export default function CreatePage() {
                   value={form.maxLaunches}
                   onChange={(event) => set("maxLaunches", event.target.value)}
                 />
-                <small>From 1 to 24.</small>
+                <small>{t.create.perDayHint}</small>
               </label>
               <label className="field">
-                <span>Max first buy</span>
+                <span>{t.create.maxBuy}</span>
                 <span className="input-suffix">
                   <input
                     className="mono"
@@ -236,7 +229,7 @@ export default function CreatePage() {
                   />
                   <em>BNB</em>
                 </span>
-                <small>0 means no first buy.</small>
+                <small>{t.create.maxBuyHint}</small>
               </label>
             </div>
           </section>
@@ -245,14 +238,14 @@ export default function CreatePage() {
             <div className="panel-head">
               <span className="panel-num mono">3</span>
               <div>
-                <h2>Create on Held</h2>
-                <p>Your wallet signs three transactions on the Held contract.</p>
+                <h2>{t.create.signTitle}</h2>
+                <p>{t.create.signCopy}</p>
               </div>
             </div>
             {error ? <p className="notice notice-error">{error}</p> : null}
             {address ? (
               <button className="btn btn-primary btn-lg btn-block" disabled={busy} type="submit">
-                {busy ? "Creating…" : "Create agent on Held"}
+                {busy ? t.create.creating : t.create.submit}
               </button>
             ) : (
               <ConnectButton className="btn btn-primary btn-lg btn-block" />
@@ -262,38 +255,38 @@ export default function CreatePage() {
 
         <aside className="create-side">
           <div className="panel preview">
-            <p className="side-label">Preview</p>
+            <p className="side-label">{t.create.preview}</p>
             <div className="preview-head">
               <AgentAvatar symbol={symbol || "??"} size="lg" />
               <div>
-                <strong>{form.name || "Agent name"}</strong>
+                <strong>{form.name || t.create.agentName}</strong>
                 <span className="mono muted">${symbol || "SYMBOL"}</span>
               </div>
             </div>
             <dl className="kv">
               <div>
-                <dt>Score line</dt>
+                <dt>{t.common.scoreLine}</dt>
                 <dd className="mono">{score}</dd>
               </div>
               <div>
-                <dt>Launches per day</dt>
+                <dt>{t.create.perDay}</dt>
                 <dd className="mono">{form.maxLaunches || "—"}</dd>
               </div>
               <div>
-                <dt>Max first buy</dt>
+                <dt>{t.create.maxBuy}</dt>
                 <dd className="mono">{form.maxBuy || "0"} BNB</dd>
               </div>
               <div>
-                <dt>Owner</dt>
-                <dd className="mono">{address ? `${shortAddress(address)}${isDemo ? " · demo" : ""}` : "Not connected"}</dd>
+                <dt>{t.common.owner}</dt>
+                <dd className="mono">{address ? `${shortAddress(address)}${isDemo ? ` · ${t.create.demo}` : ""}` : t.create.notConnected}</dd>
               </div>
             </dl>
           </div>
 
           <div className="panel">
-            <p className="side-label">What happens</p>
+            <p className="side-label">{t.create.happens}</p>
             <ol className="progress">
-              {STEPS.map(([label, where], index) => {
+              {t.create.steps.map(([label, where], index) => {
                 const state = step > index ? "done" : step === index ? (failed ? "failed" : "active") : "todo";
                 return (
                   <li key={label} className={`progress-${state}`}>
@@ -307,7 +300,7 @@ export default function CreatePage() {
               })}
             </ol>
             <p className="side-note">
-              Next, burn $HELD on the agent page so it can work. A watch costs 1 $HELD and a launch costs 10.
+              {t.create.next}
             </p>
           </div>
         </aside>
