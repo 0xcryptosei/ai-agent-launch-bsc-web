@@ -151,6 +151,48 @@ html.lang-zh .hero h1 { line-height: 1.15; }
 .btn-lg { min-height: 48px; padding: 0 22px; font-size: 15px; }
 .btn-block { width: 100%; }
 .connect { display: inline-flex; flex-direction: column; gap: 4px; }
+.connect-menu { position: relative; display: inline-flex; }
+.connect-trigger { gap: 8px; padding-right: 12px; }
+.connect-trigger-open { border-color: var(--line-strong); }
+.connect-chevron {
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  border-top: 5px solid currentColor;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  opacity: 0.55;
+  transition: transform 0.15s ease;
+}
+.connect-trigger-open .connect-chevron { transform: rotate(180deg); }
+.connect-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 160px;
+  padding: 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.connect-dropdown-item {
+  appearance: none;
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.connect-dropdown-item:hover { background: var(--bg); color: var(--red); }
 .connect-error { max-width: 220px; color: var(--red); font-size: 12px; }
 .dot-on, .dot-live {
   width: 7px;
