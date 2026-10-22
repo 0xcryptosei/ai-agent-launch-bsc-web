@@ -1,44 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { BscScanIcon, FlapIcon, TelegramIcon, XIcon } from "../components/BrandIcons";
-import { ConnectButton } from "../components/ConnectButton";
-import { LanguageToggle } from "../components/LanguageToggle";
+import { SiteFooter } from "../components/SiteFooter";
+import { SiteHeader } from "../components/SiteHeader";
 import { useI18n } from "../lib/i18n";
-import { bscscanUrl, flapUrl, telegramUrl, xUrl } from "../lib/links";
 
 export default function LandingPage() {
   const { t } = useI18n();
-  const footerLinks = [
-    ["X", xUrl, XIcon],
-    ["Telegram", telegramUrl, TelegramIcon],
-    [t.footer.bscscan, bscscanUrl, BscScanIcon],
-    [t.footer.flap, flapUrl, FlapIcon],
-  ];
-
   return (
     <div className="site">
-      <header className="site-header">
-        <div className="container site-bar">
-          <Link className="brand" href="#home">
-            <span className="mark" />
-            <strong>Society</strong>
-          </Link>
-          <nav className="site-nav" aria-label="Sections">
-            <a href="#home">{t.nav.home}</a>
-            <a href="#about">{t.nav.about}</a>
-            <a href="#feature">{t.nav.feature}</a>
-            <a href="#faq">{t.nav.faq}</a>
-          </nav>
-          <div className="row">
-            <LanguageToggle />
-            <ConnectButton className="btn btn-ghost" />
-            <Link className="btn btn-dark" href="/desk">
-              {t.launchApp}
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main>
         <section className="hero container" id="home">
@@ -217,46 +188,22 @@ export default function LandingPage() {
 
         <section className="container">
           <div className="cta">
-            <div>
-              <h2>{t.cta.title}</h2>
-              <p>{t.cta.copy}</p>
+            <div className="cta-flow" aria-hidden="true" />
+            <div className="cta-glow" aria-hidden="true" />
+            <div className="cta-inner">
+              <div>
+                <h2>{t.cta.title}</h2>
+                <p>{t.cta.copy}</p>
+              </div>
+              <Link className="btn btn-primary btn-lg" href="/desk/create">
+                {t.hero.create}
+              </Link>
             </div>
-            <Link className="btn btn-primary btn-lg" href="/desk/create">
-              {t.hero.create}
-            </Link>
           </div>
         </section>
       </main>
 
-      <footer className="container site-footer">
-        <div>
-          <Link className="brand" href="#home">
-            <span className="mark" />
-            <strong>Society</strong>
-          </Link>
-          <p>{t.footer.tag}</p>
-        </div>
-        <nav className="footer-links" aria-label={t.footer.links}>
-          {footerLinks.map(([label, href, Icon]) =>
-            href ? (
-              <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} title={label}>
-                <Icon />
-              </a>
-            ) : (
-              <span key={label} aria-label={`${label} ${t.footer.unset}`} title={label}>
-                <Icon />
-              </span>
-            )
-          )}
-        </nav>
-        <nav aria-label={t.footer.nav}>
-          <a href="#about">{t.nav.about}</a>
-          <a href="#feature">{t.nav.feature}</a>
-          <a href="#faq">{t.nav.faq}</a>
-          <Link href="/desk">{t.launchApp}</Link>
-        </nav>
-        <small>{t.footer.note}</small>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

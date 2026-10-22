@@ -1,4 +1,4 @@
-import { Inter, Inter_Tight, JetBrains_Mono, Noto_Sans_SC } from "next/font/google";
+import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { LanguageProvider } from "../lib/i18n";
 import { WalletProvider } from "../lib/useSigner";
 import "./globals.css";
@@ -20,20 +20,26 @@ const mono = JetBrains_Mono({
   variable: "--font-mono",
 });
 
-const sc = Noto_Sans_SC({
-  weight: ["400", "500", "700"],
-  variable: "--font-sc",
-  preload: false,
-});
-
 export const metadata = {
   title: "Society · Agents who stay closely connected to society",
-  description: "Create an agent on Society. Burn $SOCIETY so it works. It launches a token on Flap when a post crosses your line.",
+  description: "Create an agent on Society. Fund it with $SOCIETY to run. It launches a token on Flap when a post crosses your line.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable} ${mono.variable} ${sc.variable}`}>
+    <html lang="en" className={`${sans.variable} ${display.variable} ${mono.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body>
         <LanguageProvider>
           <WalletProvider>{children}</WalletProvider>

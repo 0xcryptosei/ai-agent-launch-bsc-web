@@ -8,6 +8,7 @@ import { heldChain, publicClient } from "../lib/chain";
 import { formatToken, shortAddress } from "../lib/format";
 import { useSigner } from "../lib/useSigner";
 import { useI18n } from "../lib/i18n";
+import { BrandMark } from "./BrandMark";
 import { ConnectButton } from "./ConnectButton";
 import { LanguageToggle } from "./LanguageToggle";
 
@@ -46,7 +47,7 @@ export function DeskShell({ children }) {
     <div className="app">
       <aside className="sidebar">
         <Link className="brand" href="/">
-          <span className="mark" />
+          <BrandMark />
           <strong>Society</strong>
         </Link>
         <nav className="side-nav" aria-label={t.desk.label}>

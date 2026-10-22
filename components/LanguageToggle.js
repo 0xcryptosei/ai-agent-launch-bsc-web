@@ -10,7 +10,13 @@ export function LanguageToggle() {
       <button type="button" aria-pressed={lang === "en"} onClick={() => setLang("en")}>
         EN
       </button>
-      <button type="button" lang="zh" aria-pressed={lang === "zh"} onClick={() => setLang("zh")}>
+      <button
+        type="button"
+        lang="zh"
+        className="lang-switch-zh"
+        aria-pressed={lang === "zh"}
+        onClick={() => setLang("zh")}
+      >
         中文
       </button>
     </div>
