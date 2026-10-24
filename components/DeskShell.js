@@ -41,7 +41,8 @@ export function DeskShell({ children }) {
     return () => window.removeEventListener(BALANCE_EVENT, read);
   }, [address]);
 
-  const chainName = heldChain.id === 56 ? t.desk.bsc : `${t.desk.local} · ${heldChain.id}`;
+  const chainName =
+    heldChain.id === 56 ? t.desk.bsc : heldChain.id === 97 ? "BSC Testnet" : `${t.desk.local} · ${heldChain.id}`;
 
   return (
     <div className="app">

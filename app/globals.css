@@ -424,14 +424,42 @@ input.mono, textarea.mono { font-size: 14px; }
 .strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 20px;
   background: var(--surface);
+  box-shadow: var(--shadow);
 }
-.strip div { display: grid; gap: 2px; padding: 22px 24px; }
+.strip div {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 26px 28px;
+}
 .strip div + div { border-left: 1px solid var(--line); }
-.strip strong { font-family: var(--font-head); font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
-.strip span { color: var(--muted); font-size: var(--text-sm); }
+.strip-kicker {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.strip strong {
+  font-family: var(--font-head);
+  font-size: clamp(26px, 3vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.strip em {
+  font-style: normal;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--amber-ink);
+  letter-spacing: 0.02em;
+}
+html.lang-zh .strip-kicker { letter-spacing: 0.04em; text-transform: none; }
 
 .section { padding: 110px 0 0; scroll-margin-top: 70px; }
 .section-head { display: grid; gap: 14px; max-width: 640px; }
@@ -1088,6 +1116,10 @@ html.lang-zh .footer-tagline { letter-spacing: 0; line-height: 1.35; }
 }
 
 @media (max-width: 860px) {
+  .strip { grid-template-columns: 1fr 1fr; }
+  .strip div { padding: 22px 20px; }
+  .strip div:nth-child(3) { border-left: 0; }
+  .strip div:nth-child(n + 3) { border-top: 1px solid var(--line); }
   .app { grid-template-columns: 1fr; }
   .sidebar {
     position: static;
@@ -1115,9 +1147,6 @@ html.lang-zh .footer-tagline { letter-spacing: 0; line-height: 1.35; }
   .container { width: calc(100% - 32px); }
   .site-bar .btn-ghost { display: none; }
   .hero { padding: 48px 0; gap: 36px; }
-  .strip { grid-template-columns: 1fr 1fr; }
-  .strip div:nth-child(3) { border-left: 0; }
-  .strip div:nth-child(n + 3) { border-top: 1px solid var(--line); }
   .split, .flow, .pricing, .form-two { grid-template-columns: 1fr; }
   .console-order { grid-template-columns: 1fr 1fr 1fr; }
   .cta-inner { flex-direction: column; align-items: flex-start; padding: 30px; }

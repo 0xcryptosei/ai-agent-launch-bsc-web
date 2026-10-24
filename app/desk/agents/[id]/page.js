@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { formatEther, keccak256, parseEther, stringToBytes } from "viem";
+import { formatEther, keccak256, parseEther, stringToBytes, zeroAddress } from "viem";
 import { BALANCE_EVENT } from "../../../../components/DeskShell";
 import { AgentAvatar, CopyText, Empty, ScoreBar, Stat, StatusBadge } from "../../../../components/ui";
 import { apiUrl, asAgent, deskAbi, deskAddress, heldAbi, heldAddress } from "../../../../lib/abi";
@@ -17,6 +17,7 @@ import {
   watchesCovered,
 } from "../../../../lib/format";
 import { useI18n } from "../../../../lib/i18n";
+import { flapTokenUrl } from "../../../../lib/links";
 import { useSigner } from "../../../../lib/useSigner";
 
 export default function AgentPage() {
@@ -32,7 +33,10 @@ export default function AgentPage() {
   const [onchain, setOnchain] = useState(null);
   const [record, setRecord] = useState(null);
   const [balance, setBalance] = useState(null);
+  const [ownerBnb, setOwnerBnb] = useState(null);
+  const [launchBnb, setLaunchBnb] = useState(null);
   const [burn, setBurn] = useState("20");
+  const [deposit, setDeposit] = useState("0.05");
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState("history");
   const [error, setError] = useState("");
@@ -49,7 +53,8 @@ export default function AgentPage() {
       functionName: "getAgent",
       args: [BigInt(id)],
     });
-    setOnchain(asAgent(agent));
+    const parsed = asAgent(agent);
+    setOnchain(parsed);
     if (address && heldAddress) {
       const heldBalance = await publicClient.readContract({
         address: heldAddress,
@@ -58,6 +63,18 @@ export default function AgentPage() {
         args: [address],
       });
       setBalance(heldBalance);
+    } else {
+      setBalance(null);
+    }
+    if (address) {
+      setOwnerBnb(await publicClient.getBalance({ address }));
+    } else {
+      setOwnerBnb(null);
+    }
+    if (parsed.launchWallet && parsed.launchWallet !== zeroAddress) {
+      setLaunchBnb(await publicClient.getBalance({ address: parsed.launchWallet }));
+    } else {
+      setLaunchBnb(null);
     }
     const response = await fetch(`${apiUrl}/api/agents/${id}`).catch(() => null);
     if (response?.ok) {
@@ -77,7 +94,36 @@ export default function AgentPage() {
     setStatus("");
   }
 
-  async function burnForWork(event) {
+  async function depositToLaunchWallet(event) {
+    event.preventDefault();
+    begin();
+    try {
+      const wallet = client();
+      const to = onchain?.launchWallet;
+      if (!to || to === zeroAddress) throw new Error(t.agent.noLaunchWallet);
+      let amount;
+      try {
+        amount = parseEther(deposit);
+      } catch {
+        throw new Error(t.agent.depositInvalid);
+      }
+      if (amount <= 0n) throw new Error(t.agent.depositInvalid);
+      const walletBalance = await publicClient.getBalance({ address });
+      if (walletBalance < amount) throw new Error(t.agent.depositTooMuch);
+      setStatus(t.agent.depositing);
+      const hash = await wallet.sendTransaction({ to, value: amount });
+      await publicClient.waitForTransactionReceipt({ hash });
+      setStatus(t.agent.deposited.replace("{amount}", deposit));
+      await load();
+    } catch (err) {
+      setError(err.shortMessage || err.message);
+      setStatus("");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function fundAgent(event) {
     event.preventDefault();
     begin();
     try {
@@ -103,7 +149,7 @@ export default function AgentPage() {
       const hash = await wallet.writeContract({
         address: deskAddress,
         abi: deskAbi,
-        functionName: "burnForWork",
+        functionName: "fundAgent",
         args: [BigInt(id), amount],
       });
       await publicClient.waitForTransactionReceipt({ hash });
@@ -236,6 +282,11 @@ export default function AgentPage() {
         <Stat label={t.common.scoreLine} value={`${onchain.minScore} / 100`} />
         <Stat label={t.common.dailyCap} value={onchain.maxLaunchesPerDay} hint={t.agent.perDayHint} />
         <Stat label={t.agent.maxBuy} value={`${formatToken(onchain.maxBuyWei, 4)} BNB`} />
+        <Stat
+          label={t.agent.launchBalance}
+          value={launchBnb === null ? "—" : `${formatToken(launchBnb, 4)} BNB`}
+          hint={t.agent.launchBalanceHint}
+        />
       </div>
 
       <div className="agent-layout">
@@ -290,8 +341,8 @@ export default function AgentPage() {
                               {launch.status === "sent" ? t.agent.token : t.agent.predicted} {shortAddress(launch.token)}
                             </span>
                           ) : null}
-                          {launch.status === "sent" ? (
-                            <a href={`https://flap.sh/bnb/${launch.token}`} target="_blank" rel="noreferrer">
+                          {launch.status === "sent" && flapTokenUrl(launch.token) ? (
+                            <a href={flapTokenUrl(launch.token)} target="_blank" rel="noreferrer">
                               {t.agent.flap}
                             </a>
                           ) : null}
@@ -375,7 +426,7 @@ export default function AgentPage() {
         <aside className="agent-side">
           {isOwner ? (
             <>
-              <form className="panel" onSubmit={burnForWork}>
+              <form className="panel" onSubmit={fundAgent}>
                 <div className="row-between">
                   <h3>{t.agent.burnTitle}</h3>
                   <span className="muted small">
@@ -396,6 +447,46 @@ export default function AgentPage() {
                 </div>
                 <button className="btn btn-primary btn-block" disabled={busy} type="submit">
                   {t.agent.burnBtn}
+                </button>
+              </form>
+
+              <form className="panel" onSubmit={depositToLaunchWallet}>
+                <div className="row-between">
+                  <h3>{t.agent.depositTitle}</h3>
+                  <span className="muted small">
+                    {t.agent.yourBnb} <span className="mono">{ownerBnb === null ? "—" : formatToken(ownerBnb, 4)}</span>
+                  </span>
+                </div>
+                <p className="muted small">{t.agent.depositCopy}</p>
+                {onchain.launchWallet && onchain.launchWallet !== zeroAddress ? (
+                  <p className="muted small">
+                    {t.agent.launchWallet}{" "}
+                    <CopyText value={onchain.launchWallet} short={shortAddress(onchain.launchWallet)} />
+                  </p>
+                ) : null}
+                <span className="input-suffix">
+                  <input
+                    className="mono"
+                    inputMode="decimal"
+                    value={deposit}
+                    onChange={(event) => setDeposit(event.target.value)}
+                    disabled={!onchain.launchWallet || onchain.launchWallet === zeroAddress}
+                  />
+                  <em>BNB</em>
+                </span>
+                <div className="chips">
+                  {["0.01", "0.05", "0.1", "0.5"].map((value) => (
+                    <button key={value} type="button" className="chip-btn" onClick={() => setDeposit(value)}>
+                      {value}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  className="btn btn-dark btn-block"
+                  disabled={busy || !onchain.launchWallet || onchain.launchWallet === zeroAddress}
+                  type="submit"
+                >
+                  {t.agent.depositBtn}
                 </button>
               </form>
 

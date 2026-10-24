@@ -77,7 +77,7 @@ export default function LandingPage() {
             <div className="console-result">
               <span className="pill pill-amber">{t.hero.launch}</span>
               <span>
-                ORANGECAT on Flap · <span className="mono">0xbD49…8888</span>
+                ORANGECAT on Flap · <span className="mono">0xbD49…7777</span>
               </span>
             </div>
           </div>
@@ -85,20 +85,24 @@ export default function LandingPage() {
 
         <section className="container strip" aria-label="Key numbers">
           <div>
-            <strong>1 $SOCIETY</strong>
-            <span>{t.strip.watch}</span>
+            <span className="strip-kicker">{t.strip.watch}</span>
+            <strong>1</strong>
+            <em>$SOCIETY</em>
           </div>
           <div>
-            <strong>10 $SOCIETY</strong>
-            <span>{t.strip.launch}</span>
+            <span className="strip-kicker">{t.strip.launch}</span>
+            <strong>10</strong>
+            <em>$SOCIETY</em>
           </div>
           <div>
+            <span className="strip-kicker">{t.strip.line}</span>
             <strong>0–100</strong>
-            <span>{t.strip.line}</span>
+            <em>{t.strip.scoreUnit}</em>
           </div>
           <div>
+            <span className="strip-kicker">{t.strip.chain}</span>
             <strong>BSC</strong>
-            <span>{t.strip.chain}</span>
+            <em>{t.strip.network}</em>
           </div>
         </section>
 
